@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34112.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "timeular-report", "timeular-report\timeular-report.csproj", "{7226F8DC-213A-44DC-A888-4C9829AAD419}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "timeular-api", "timeular-api\timeular-api.csproj", "{84CA595B-7A2C-476A-AE59-93BAB14EFB94}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7226F8DC-213A-44DC-A888-4C9829AAD419}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7226F8DC-213A-44DC-A888-4C9829AAD419}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7226F8DC-213A-44DC-A888-4C9829AAD419}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7226F8DC-213A-44DC-A888-4C9829AAD419}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84CA595B-7A2C-476A-AE59-93BAB14EFB94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84CA595B-7A2C-476A-AE59-93BAB14EFB94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84CA595B-7A2C-476A-AE59-93BAB14EFB94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84CA595B-7A2C-476A-AE59-93BAB14EFB94}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6CFB47BA-E7DA-488C-9B0A-49F561292630}
+	EndGlobalSection
+EndGlobal
