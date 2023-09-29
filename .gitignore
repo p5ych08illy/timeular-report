@@ -396,3 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+timeular-report/timeular-report/Properties/launchSettings.json
