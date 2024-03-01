@@ -44,7 +44,8 @@ namespace timeular_report
 
                     if (entry.activity.name == "Lunch")
                     {
-                        entries.Add((date, Format(prev.duration.startedAt), Format(entry.duration.startedAt)));
+                        if (entry.duration.startedAt - prev.duration.startedAt >= TimeSpan.FromMinutes(15))
+                            entries.Add((date, Format(prev.duration.startedAt), Format(entry.duration.startedAt))); 
                         prev = day.ElementAtOrDefault(i + 1);
                     }
                     else if ((entry.duration.startedAt - last.duration.stoppedAt) > TimeSpan.FromMinutes(15))
@@ -56,12 +57,14 @@ namespace timeular_report
                     last = entry;
                 }
 
-                if (prev != null && prev.activity.name != "Lunch")
+                if (prev != null && prev.activity.name != "Lunch" && day.Last().activity.name != "Lunch")
                     entries.Add((date, Format(prev.duration.startedAt), Format(day.Last().duration.stoppedAt)));
 
             }
 
-            var time = groupByDay.SelectMany(d => d.Where(e => e.activity.name != "Lunch").Select(e => (e.duration.stoppedAt - e.duration.startedAt).TotalMinutes)).Sum();
+            var time = groupByDay.SelectMany(d => d.Where(e => e.activity.name != "Lunch")
+                                                  .Select(e => (RoundToNearest(e.duration.stoppedAt, TimeSpan.FromMinutes(15)) - RoundToNearest(e.duration.startedAt, TimeSpan.FromMinutes(15))).TotalMinutes))
+                                 .Sum();
             var avg = time / (double)groupByDay.Count();
 
             var csv = new StringBuilder();

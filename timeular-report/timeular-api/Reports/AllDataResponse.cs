@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace timeular_api.Reports
         public Timeentry[] timeEntries { get; set; }
     }
 
+    [DebuggerDisplay("Activity: {activity.name}, Duration: {duration.stoppedAt - duration.startedAt}")]
     public class Timeentry
     {
         public string id { get; set; }
