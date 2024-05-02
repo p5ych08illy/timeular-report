@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using timeular_api;
-using timeular_api.Reports;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace timeular_report
 {
@@ -29,7 +23,7 @@ namespace timeular_report
                              orderby entry.duration.startedAt
                              group entry by entry.duration.startedAt.Day;
 
-            var entries = new List<(string day, string start, string end)>();
+            var entries = new List<(string day, DateTime start, DateTime end)>();
 
             foreach (var day in groupByDay)
             {
@@ -45,12 +39,12 @@ namespace timeular_report
                     if (entry.activity.name == "Lunch")
                     {
                         if (entry.duration.startedAt - prev.duration.startedAt >= TimeSpan.FromMinutes(15))
-                            entries.Add((date, Format(prev.duration.startedAt), Format(entry.duration.startedAt))); 
+                            entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(entry.duration.startedAt)));
                         prev = day.ElementAtOrDefault(i + 1);
                     }
                     else if ((entry.duration.startedAt - last.duration.stoppedAt) > TimeSpan.FromMinutes(15))
                     {
-                        entries.Add((date, Format(prev.duration.startedAt), Format(last.duration.stoppedAt)));
+                        entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(last.duration.stoppedAt)));
                         prev = entry;
                     }
 
@@ -58,20 +52,19 @@ namespace timeular_report
                 }
 
                 if (prev != null && prev.activity.name != "Lunch" && day.Last().activity.name != "Lunch")
-                    entries.Add((date, Format(prev.duration.startedAt), Format(day.Last().duration.stoppedAt)));
+                    entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(day.Last().duration.stoppedAt)));
 
             }
 
-            var time = groupByDay.SelectMany(d => d.Where(e => e.activity.name != "Lunch")
-                                                  .Select(e => (RoundToNearest(e.duration.stoppedAt, TimeSpan.FromMinutes(15)) - RoundToNearest(e.duration.startedAt, TimeSpan.FromMinutes(15))).TotalMinutes))
-                                 .Sum();
+            var time = entries.Select(e => (e.end - e.start).TotalMinutes)
+                              .Sum();
             var avg = time / (double)groupByDay.Count();
 
             var csv = new StringBuilder();
             csv.AppendLine("Date\tFrom\tTo");
             foreach (var item in entries)
             {
-                csv.AppendLine($"{item.day}\t{item.start}\t{item.end}");
+                csv.AppendLine($"{item.day}\t{Format(item.start)}\t{Format(item.end)}");
             }
             csv.AppendLine();
             csv.AppendLine($"Days: {groupByDay.Count()} ; Total Hours: {time / 60} ; AVG: {avg / 60}");
@@ -81,6 +74,11 @@ namespace timeular_report
         private string Format(DateTime time)
         {
             return RoundToNearest(time.ToLocalTime(), TimeSpan.FromMinutes(15)).ToShortTimeString();
+        }
+
+        private DateTime RoundToNearest(DateTime dt)
+        {
+            return RoundToNearest(dt, TimeSpan.FromMinutes(15));
         }
 
         private DateTime RoundToNearest(DateTime dt, TimeSpan d)
