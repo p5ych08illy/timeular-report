@@ -42,7 +42,7 @@ namespace timeular_report
                             entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(entry.duration.startedAt)));
                         prev = day.ElementAtOrDefault(i + 1);
                     }
-                    else if ((entry.duration.startedAt - last.duration.stoppedAt) > TimeSpan.FromMinutes(15))
+                    else if (last.activity.name != "Lunch" && (entry.duration.startedAt - last.duration.stoppedAt) > TimeSpan.FromMinutes(15))
                     {
                         entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(last.duration.stoppedAt)));
                         prev = entry;
