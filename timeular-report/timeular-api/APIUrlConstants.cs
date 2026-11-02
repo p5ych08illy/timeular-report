@@ -12,6 +12,7 @@ namespace timeular_api
         public const string SignIn = "developer/sign-in";
         public const string Logout = "developer/logout";
         public const string GetAllData = "report/data";
-        public const string GetAllActivities = "activities";
+        // The public v3/v4 endpoints omit excludedFromWorkHours; this is the web client's endpoint.
+        public const string GetAllActivities = "https://api.timeular.com/internal/v8/time-tracking/activities";
     }
 }

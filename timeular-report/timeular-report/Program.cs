@@ -16,6 +16,16 @@ class Program
             return -1;
         }
 
+        var round = args.Skip(1).Contains("--round");
+        var monthArgs = args.Skip(1).Where(arg => arg != "--round").ToArray();
+        var date = DateTime.Now.AddMonths(-1);
+        if (monthArgs.Length > 1 ||
+            (monthArgs.Length == 1 && !DateTime.TryParse(monthArgs[0], out date)))
+        {
+            PrintUsage();
+            return -1;
+        }
+
         IConfiguration config = new ConfigurationBuilder()
               .AddJsonFile("appsettings.json")
               .AddUserSecrets<Program>()
@@ -29,15 +39,8 @@ class Program
             var success = await api.SignInAsync(new timeular_api.SignIn.SignInRequest { apiKey = settings.ApiKey, apiSecret = settings.ApiSecret });
             if (success)
             {
-                var date = DateTime.Now.AddMonths(-1);
-
-                if (args.Length > 1 && DateTime.TryParse(args[1], out var input))
-                {
-                    date = input.Date;
-                }
-
                 var report = new Report(api);
-                await report.GenerateReport(args[0], date);
+                await report.GenerateReport(args[0], date, round);
                 api.Logout();
             }
         }
@@ -47,8 +50,9 @@ class Program
 
     private static void PrintUsage()
     {
-        Console.WriteLine("usage: timeular-report.exe folder [month]" + Environment.NewLine +
-                          "Example: timeular-report.exe C:\\ 2023.08"
+        Console.WriteLine("usage: timeular-report.exe folder [month] [--round]" + Environment.NewLine +
+                          "  --round  Round times to the nearest 15 minutes (disabled by default)." + Environment.NewLine +
+                          "Example: timeular-report.exe C:\\ 2023.08 --round"
               );
     }
 }

@@ -12,12 +12,23 @@ namespace timeular_report
             this.api = api;
         }
 
-        internal async Task GenerateReport(string path, DateTime month)
+        internal async Task GenerateReport(string path, DateTime month, bool round = false)
         {
             var firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1);
 
             var data = await api.GetAllData(firstDayOfMonth, lastDayOfMonth);
+            var activities = await api.GetAllActivities();
+            var workHoursExclusions = activities.activities.Select(a => (a.id, a.excludedFromWorkHours))
+                .Concat(activities.inactiveActivities.Select(a => (a.id, a.excludedFromWorkHours)))
+                .Concat(activities.archivedActivities.Select(a => (a.id, a.excludedFromWorkHours)))
+                .ToDictionary(a => a.id, a => a.excludedFromWorkHours);
+
+            foreach (var entry in data.timeEntries)
+            {
+                if (!workHoursExclusions.TryGetValue(entry.activity.id, out var excluded) || !excluded.HasValue)
+                    throw new InvalidOperationException($"Work-hours classification is missing for activity {entry.activity.id}.");
+            }
 
             var groupByDay = from entry in data.timeEntries
                              orderby entry.duration.startedAt
@@ -27,34 +38,39 @@ namespace timeular_report
 
             foreach (var day in groupByDay)
             {
-                var last = day.First();
-                var prev = day.First();
+                DateTime? start = null;
+                DateTime? end = null;
+                var date = day.First().duration.startedAt.Date.ToShortDateString();
 
-                var date = last.duration.startedAt.Date.ToShortDateString();
-
-                for (var i = 1; i < day.Count(); i++)
+                foreach (var entry in day)
                 {
-                    var entry = day.ElementAt(i);
-
-                    if (entry.activity.name == "Lunch")
+                    if (workHoursExclusions[entry.activity.id] == true)
                     {
-                        if (entry.duration.startedAt - prev.duration.startedAt >= TimeSpan.FromMinutes(15))
-                            entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(entry.duration.startedAt)));
-                        prev = day.ElementAtOrDefault(i + 1);
+                        if (start.HasValue && entry.duration.startedAt - start.Value >= TimeSpan.FromMinutes(15))
+                            entries.Add((date, start.Value, entry.duration.startedAt));
+                        start = null;
+                        end = null;
                     }
-                    else if (last.activity.name != "Lunch" && (entry.duration.startedAt - last.duration.stoppedAt) > TimeSpan.FromMinutes(15))
+                    else
                     {
-                        entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(last.duration.stoppedAt)));
-                        prev = entry;
+                        if (start.HasValue && end.HasValue && entry.duration.startedAt - end.Value > TimeSpan.FromMinutes(15))
+                        {
+                            entries.Add((date, start.Value, end.Value));
+                            start = null;
+                        }
+                        start ??= entry.duration.startedAt;
+                        end = entry.duration.stoppedAt;
                     }
-
-                    last = entry;
                 }
 
-                if (prev != null && prev.activity.name != "Lunch" && day.Last().activity.name != "Lunch")
-                    entries.Add((date, RoundToNearest(prev.duration.startedAt), RoundToNearest(day.Last().duration.stoppedAt)));
+                if (start.HasValue && end.HasValue)
+                    entries.Add((date, start.Value, end.Value));
 
             }
+
+            entries = entries.Select(e => (e.day,
+                start: round ? RoundToNearest(e.start.ToLocalTime()) : e.start.ToLocalTime(),
+                end: round ? RoundToNearest(e.end.ToLocalTime()) : e.end.ToLocalTime())).ToList();
 
             var time = entries.Select(e => (e.end - e.start).TotalMinutes)
                               .Sum();
@@ -73,7 +89,7 @@ namespace timeular_report
 
         private string Format(DateTime time)
         {
-            return RoundToNearest(time.ToLocalTime(), TimeSpan.FromMinutes(15)).ToShortTimeString();
+            return time.ToShortTimeString();
         }
 
         private DateTime RoundToNearest(DateTime dt)

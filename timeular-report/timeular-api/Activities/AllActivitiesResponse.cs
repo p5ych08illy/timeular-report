@@ -21,6 +21,7 @@ namespace timeular_api.Activities
         public string integration { get; set; }
         public string spaceId { get; set; }
         public object deviceSide { get; set; }
+        public bool? excludedFromWorkHours { get; set; }
     }
 
     public class Inactiveactivity
@@ -30,6 +31,7 @@ namespace timeular_api.Activities
         public string color { get; set; }
         public string integration { get; set; }
         public string spaceId { get; set; }
+        public bool? excludedFromWorkHours { get; set; }
     }
 
     public class Archivedactivity
@@ -39,6 +41,7 @@ namespace timeular_api.Activities
         public string color { get; set; }
         public string integration { get; set; }
         public string spaceId { get; set; }
+        public bool? excludedFromWorkHours { get; set; }
     }
 
 }
